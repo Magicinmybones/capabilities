@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#050505">
+<title>Capabilities — Clarity across every layer</title>
+<script>
+/* Entrance gate: set before first paint so nothing flashes. Skipped for
+   reduced-motion users (and simply absent without JS) → page shows instantly. */
+try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('enter')}catch(e){}
+</script>
+<style>
+/* ------------------------------------------------------------------
+   Fonts (embedded, offline-safe)
+   Geist (Vercel, SIL OFL 1.1) · JetBrains Mono (SIL OFL 1.1)
+------------------------------------------------------------------- */
+@font-face{font-family:"Geist";font-style:normal;font-weight:100 900;font-display:block;src:url(assets/geist-variable.woff2) format("woff2-variations"),url(assets/geist-variable.woff2) format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-display:block;src:url(assets/jetbrains-mono.woff2) format("woff2")}
+
+/* ------------------------------------------------------------------
+   Scaling system
+   The design was measured on an 826 × 552 artboard. Every length below
+   is written in artboard pixels ("u") and compiled to calc(N * var(--u)).
+
+   --u = the largest uniform scale at which the whole artboard is visible
+         ("contain"), but never smaller than 1 CSS px per artboard px
+         on narrow-but-short screens, so text stays legible.
+   The axis that has room left over is absorbed by the layout itself
+   (flexible gaps / taller cards, or wider columns) — never by
+   letterbox bars, so there is no empty band at the top or bottom.
+------------------------------------------------------------------- */
+:root{
+  --W:826; --H:552;
+  --vh:100vh;
+  --u:max(min(calc(100vw / var(--W)), calc(var(--vh) / var(--H))), min(calc(100vw / var(--W)), 1px));
+
+  --bg:#050505;
+  --ink:#ffffff;
+  --ink-sub:rgba(255,255,255,.635);
+  --ink-body:rgba(255,255,255,.58);
+  --ink-title:rgba(248,255,255,.965);
+  --ink-label:rgba(255,255,255,.445);
+  --ink-index:rgba(255,255,255,.99);
+  --rule:rgba(255,255,255,.075);
+  --grid-line:rgba(255,255,255,.03);
+
+  --card-fill:rgba(255,255,255,.021);
+  --w-title:473; --w-lede:290; --w-card-title:515; --w-card-text:325;
+  --card-stroke:rgba(255,255,255,.075);
+  --card-stroke-top:rgba(255,255,255,.095);
+}
+@supports (height:100svh){ :root{ --vh:100svh; } }
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg)}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{
+  color:var(--ink);
+  font-family:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+}
+
+/* ------------------------------------------------------------------
+   Section shell — always at least one full viewport tall
+------------------------------------------------------------------- */
+.cap{
+  position:relative;
+  isolation:isolate;
+  min-height:var(--vh);
+  display:flex;flex-direction:column;
+  background:var(--bg);
+}
+/* Frame: artboard width, may grow up to 1.3× on very wide screens */
+.cap__frame{
+  position:relative;
+  flex:1 0 auto;
+  width:100%;
+  max-width:calc(1074 * var(--u));            /* calc(826 * var(--u)) × 1.3 */
+  margin:0 auto;
+  display:flex;flex-direction:column;
+  padding:0 calc(12 * var(--u));
+}
+/* hairline column guides at the thirds */
+.cap__grid{position:absolute;inset:0;pointer-events:none;z-index:-1}
+.cap__grid::before,.cap__grid::after{
+  content:"";position:absolute;top:0;bottom:0;width:max(calc(1 * var(--u)),1px);
+  background:var(--grid-line);
+}
+.cap__grid::before{left:calc(33.2324% - calc(.5 * var(--u)))}   /* x = 274.5 / 826 */
+.cap__grid::after {left:calc(66.6667% - calc(.2 * var(--u)))}   /* x = 550.7 / 826 */
+
+/* ---------------- top bar ---------------- */
+.cap__bar{
+  flex:none;
+  height:calc(41 * var(--u));
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:calc(16.55 * var(--u)) calc(1 * var(--u)) 0;
+  font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:calc(7.2 * var(--u));line-height:calc(10 * var(--u));
+  letter-spacing:.275em;
+  text-transform:uppercase;
+  color:var(--ink-label);
+  white-space:nowrap;
+  position:relative;
+}
+.cap__index{display:flex;align-items:center;gap:calc(5 * var(--u));color:var(--ink-index)}
+.cap__index::after{content:"";display:block;width:calc(31 * var(--u));height:max(calc(1 * var(--u)),1px);background:var(--rule);margin-top:calc(.8 * var(--u))}
+.cap__bar span:last-child{margin-right:-.275em}  /* trailing tracking */
+
+/* ---------------- hero ---------------- */
+.cap__space{flex:0 0 auto}
+.cap__space--a{height:calc(45.1 * var(--u));flex-grow:2}
+.cap__space--b{height:calc(50.2 * var(--u));flex-grow:1}
+
+.cap__hero{flex:none;text-align:center}
+.cap__title{
+  margin:0;
+  text-wrap:balance;
+  font-weight:var(--w-title);
+  font-size:calc(47.3 * var(--u));line-height:calc(52 * var(--u));
+  letter-spacing:-.05em;
+  color:var(--ink);
+}
+.cap__title em{
+  font-style:normal;
+  background:linear-gradient(90deg,rgb(72,128,132) 0%,rgb(9,20,19) 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  padding-right:.01em;margin-right:-.115em;
+}
+.cap__lede{
+  margin:calc(19.9 * var(--u)) auto 0;
+  max-width:calc(396 * var(--u));
+  font-weight:var(--w-lede);
+  font-size:calc(13.4 * var(--u));line-height:calc(18 * var(--u));
+  letter-spacing:-.034em;
+  color:var(--ink-sub);
+  text-wrap:pretty;
+}
+
+/* ---------------- cards ---------------- */
+.cap__cards{
+  flex:3 0 auto;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:calc(16 * var(--u));
+  min-height:calc(273 * var(--u));
+}
+.card{
+  position:relative;
+  display:flex;flex-direction:column;
+  min-height:calc(273 * var(--u));
+  border-radius:calc(4 * var(--u));
+  background:
+    radial-gradient(circle calc(135 * var(--u)) at var(--glow-at, 50% 50%),
+      rgba(55,110,115,.200) 0%,
+      rgba(55,110,115,.200) 22%,
+      rgba(55,110,115,.184) 33.3%,
+      rgba(55,110,115,.162) 40.7%,
+      rgba(55,110,115,.140) 48.1%,
+      rgba(55,110,115,.114) 55.6%,
+      rgba(55,110,115,.085) 63%,
+      rgba(55,110,115,.056) 70.4%,
+      rgba(55,110,115,.038) 77.8%,
+      rgba(55,110,115,.016) 85.2%,
+      rgba(55,110,115,.003) 92.6%,
+      rgba(55,110,115,0) 100%),
+    var(--card-fill);
+  border:max(calc(1 * var(--u)),1px) solid var(--card-stroke);
+  border-top-color:var(--card-stroke-top);
+  box-shadow:0 0 0 max(calc(1 * var(--u)),1px) rgba(0,0,0,.22), 0 0 calc(2 * var(--u)) rgba(0,0,0,.35);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  backdrop-filter:blur(14px) saturate(140%);
+  overflow:clip;               /* glass sheet clips its own glow to the radius */
+}
+.card__stage{
+  flex:1 0 calc(170 * var(--u));
+  display:flex;align-items:center;justify-content:center;
+}
+.card__stage svg{display:block;overflow:visible}
+.card__body{
+  flex:none;
+  padding:0 calc(21 * var(--u)) 0;
+  height:calc(101 * var(--u));               /* 273 − 2 border − 170 stage */
+}
+.card__title{
+  margin:0;padding-top:calc(3.3 * var(--u));
+  font-weight:var(--w-card-title);
+  font-size:calc(15 * var(--u));line-height:calc(18 * var(--u));
+  letter-spacing:-.008em;
+  color:var(--ink-title);
+}
+.card__text{
+  margin:calc(9.2 * var(--u)) 0 0;
+  max-width:calc(206 * var(--u));
+  font-weight:var(--w-card-text);
+  font-size:max(calc(10.5 * var(--u)), 9.5px);line-height:calc(17 * var(--u));
+  letter-spacing:-.005em;
+  color:var(--ink-body);
+}
+.cap__foot{flex:none;height:calc(34 * var(--u))}
+
+/* SVG paint helpers */
+.icon-signals{width:calc(121 * var(--u));height:calc(120 * var(--u))}
+.icon-insights{width:calc(146 * var(--u));height:calc(102 * var(--u))}
+.icon-report{width:calc(111 * var(--u));height:calc(122 * var(--u))}
+.blend-screen{mix-blend-mode:screen}
+
+/* ==================================================================
+   RESPONSIVE ARCHITECTURE
+   Breakpoints come from measured failure points of the layout above,
+   not from device widths:
+
+   Desktop (3-column row) stays while BOTH hold:
+     · width ≥ 787px  → card copy ≥ 10px (design size is 10.5 at 826)
+     · aspect ≥ 1.15  → cards stretch ≤ ~30% beyond their design height
+   Tablet (stacked horizontal panels) takes over past either limit.
+   Mobile (stacked original cards) below 529px: narrower than that the
+   one-line headline (487.5 + 40 margins) wraps and a panel's copy
+   column drops under ~230px.
+================================================================== */
+
+/* ---------------- Tablet: 529px → desktop limits ---------------- */
+@media (min-width:529px) and (max-width:786.98px),
+       (min-width:529px) and (max-aspect-ratio:23/20){
+  :root{
+    --Wt:560; --Ht:897;   /* tablet artboard: natural height of this layout at u = 1 */
+    --u:max(1px, min(calc(100vw / var(--Wt)), calc(var(--vh) / var(--Ht))));
+  }
+  .cap__frame{max-width:calc(720 * var(--u));padding:0 calc(20 * var(--u))}   /* panels never sprawl on near-square windows */
+  .cap__space--a{height:calc(58 * var(--u));flex-grow:2}
+  .cap__space--b{height:calc(44 * var(--u));flex-grow:1}
+  .cap__cards{grid-template-columns:minmax(0,1fr);gap:calc(14 * var(--u));flex-grow:0}
+  .card{flex-direction:row;min-height:calc(196 * var(--u));--glow-at:46% 50%}
+  .card__stage{flex:0 0 46%}
+  .card__body{
+    height:auto;flex:1 1 auto;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:0 calc(30 * var(--u)) 0 calc(4 * var(--u));
+  }
+  .card__title{padding-top:0;font-size:calc(16 * var(--u));line-height:calc(20 * var(--u))}
+  .card__text{max-width:calc(262 * var(--u));font-size:calc(11.5 * var(--u));line-height:calc(18.5 * var(--u))}
+  .cap__foot{height:calc(30 * var(--u))}
+}
+
+/* ---------------- Mobile: below 529px ---------------- */
+@media (max-width:528.98px){
+  :root{ --u:clamp(.86px, calc(100vw / 390), 1.06px); }
+  .cap__frame{padding:0 calc(16 * var(--u));max-width:none}
+  .cap__grid::before{left:calc(50% - .5px)}
+  .cap__grid::after{display:none}
+  .cap__bar{height:auto;padding-top:calc(18 * var(--u));padding-bottom:0;font-size:calc(8 * var(--u));line-height:calc(11 * var(--u))}
+  .cap__bar span:nth-child(2){position:absolute;left:50%;transform:translateX(-50%)}
+  .cap__space--a{height:calc(56 * var(--u));flex-grow:1}
+  .cap__space--b{height:calc(40 * var(--u));flex-grow:1}
+  .cap__title{font-size:calc(44 * var(--u));line-height:calc(46 * var(--u))}
+  .cap__lede{margin-top:calc(18 * var(--u));max-width:calc(340 * var(--u));font-size:calc(14.4 * var(--u));line-height:calc(21 * var(--u));letter-spacing:-.03em}
+  .cap__cards{grid-template-columns:minmax(0,1fr);gap:calc(12 * var(--u));flex-grow:0}
+  .card{min-height:0}
+  .card__stage{flex:none;height:calc(178 * var(--u))}
+  .card__body{height:auto;padding:0 calc(22 * var(--u)) calc(24 * var(--u))}
+  .card__title{font-size:calc(17 * var(--u));line-height:calc(22 * var(--u))}
+  .card__text{font-size:calc(12.5 * var(--u));line-height:calc(19 * var(--u));max-width:none;margin-top:calc(8 * var(--u))}
+  .cap__foot{height:calc(28 * var(--u))}
+}
+/* Very narrow (≤ 359px): keep the top bar on one line */
+@media (max-width:359.98px){
+  .cap__bar{letter-spacing:.16em}
+  .cap__index::after{width:calc(16 * var(--u))}
+}
+
+/* ------------------------------------------------------------------
+   Entrance (runs once; see script at the end of <body>)
+   Only the opening-composition groups are held back until the master
+   timeline starts. Failsafe: if the timeline never starts, reveal at 2.5s.
+------------------------------------------------------------------- */
+.enter .cap__bar,.enter .cap__hero,.enter .card{opacity:0;animation:e-failsafe 0s linear 2.5s forwards}
+@keyframes e-failsafe{to{opacity:1}}
+.cap__index::after{transform-origin:0 50%}
+.e-pivot{transform-box:fill-box;transform-origin:50% 50%}
+
+@media (prefers-reduced-transparency:reduce){
+  .card{-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+</style>
+</head>
+<body>
+<section class="cap" aria-labelledby="cap-title">
+  <div class="cap__frame">
+    <div class="cap__grid" aria-hidden="true"></div>
+
+    <header class="cap__bar">
+      <span class="cap__index">01</span>
+      <span>// Capabilities</span>
+      <span>Full Visibility</span>
+    </header>
+
+    <div class="cap__space cap__space--a"></div>
+
+    <div class="cap__hero">
+      <h2 class="cap__title" id="cap-title"><em>Clarity</em> across every layer</h2>
+      <p class="cap__lede">A unified view of your infrastructure. Detect patterns, anticipate issues, and optimize performance before problems arise.</p>
+    </div>
+
+    <div class="cap__space cap__space--b"></div>
+
+    <div class="cap__cards">
+      <!-- 1 · Real-Time Signals -->
+      <article class="card">
+        <div class="card__stage">
+          <svg class="icon-signals" viewBox="80 271 121 120" aria-hidden="true" focusable="false">
+            <defs>
+              <linearGradient id="rs-outer" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#7cefe0" stop-opacity=".36"/>
+                <stop offset=".5" stop-color="#7cefe0" stop-opacity=".25"/>
+                <stop offset=".78" stop-color="#7cefe0" stop-opacity=".06"/>
+                <stop offset="1" stop-color="#7cefe0" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="rs-mid" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#7cf0ec" stop-opacity=".44"/>
+                <stop offset=".5" stop-color="#7cf0ec" stop-opacity=".26"/>
+                <stop offset=".78" stop-color="#7cf0ec" stop-opacity=".05"/>
+                <stop offset="1" stop-color="#7cf0ec" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="rs-inner" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#80f2f0" stop-opacity=".62"/>
+                <stop offset=".5" stop-color="#80f2f0" stop-opacity=".34"/>
+                <stop offset=".8" stop-color="#80f2f0" stop-opacity=".06"/>
+                <stop offset="1" stop-color="#80f2f0" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="rs-core" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#4a7f82"/>
+                <stop offset=".45" stop-color="#2a5456"/>
+                <stop offset="1" stop-color="#0e2526"/>
+              </linearGradient>
+              <radialGradient id="rs-wide" cx="140.5" cy="331" r="60" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#3fa08f" stop-opacity=".03"/>
+                <stop offset=".75" stop-color="#3fa08f" stop-opacity=".02"/>
+                <stop offset="1" stop-color="#3fa08f" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="rs-halo" cx="140.5" cy="331" r="34" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#3fa08f" stop-opacity=".22"/>
+                <stop offset=".40" stop-color="#3fa08f" stop-opacity=".18"/>
+                <stop offset=".55" stop-color="#3fa08f" stop-opacity=".09"/>
+                <stop offset=".72" stop-color="#3fa08f" stop-opacity=".035"/>
+                <stop offset="1" stop-color="#3fa08f" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <g class="e-pivot" data-e="core-halo"><circle cx="140.5" cy="331" r="60" fill="url(#rs-wide)"/>
+            <circle cx="140.5" cy="331" r="34" fill="url(#rs-halo)"/></g>
+            <circle class="e-pivot" data-e="ring-3" cx="140.5" cy="331" r="51.5" fill="none" stroke="url(#rs-outer)" stroke-width="1"/>
+            <circle class="e-pivot" data-e="ring-2" cx="140.5" cy="331" r="31" fill="none" stroke="url(#rs-mid)" stroke-width="1"/>
+            <circle class="e-pivot" data-e="ring-1" cx="140.5" cy="331" r="15" fill="none" stroke="url(#rs-inner)" stroke-width="1"/>
+            <circle class="e-pivot" data-e="core" cx="140.5" cy="331" r="10.3" fill="url(#rs-core)"/>
+          </svg>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Real-Time Signals</h3>
+          <p class="card__text">Stay ahead with live system data and continuous performance tracking across all nodes.</p>
+        </div>
+      </article>
+
+      <!-- 2 · Actionable Insights -->
+      <article class="card">
+        <div class="card__stage">
+          <svg class="icon-insights" viewBox="340 280 146 102" aria-hidden="true" focusable="false">
+            <defs>
+              <linearGradient id="ai-a" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#4c8c90"/>
+                <stop offset="1" stop-color="#193034"/>
+              </linearGradient>
+              <linearGradient id="ai-b" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#46848c"/>
+                <stop offset="1" stop-color="#0e1f1a"/>
+              </linearGradient>
+            </defs>
+            <g fill="#214645" data-e="dashes">
+              <rect x="398.7" y="289.8" width="15.8" height="4.2" rx="2.1"/>
+              <rect x="419.3" y="289.8" width="10.4" height="4.2" rx="2.1"/>
+              <rect x="435.3" y="289.8" width="25.6" height="4.2" rx="2.1"/>
+            </g>
+            <defs><filter id="ai-bloom" x="-60%" y="-80%" width="220%" height="260%"><feGaussianBlur stdDeviation="6"/></filter></defs>
+            <ellipse cx="376" cy="351" rx="26" ry="20" fill="#4fbfb0" fill-opacity=".05" filter="url(#ai-bloom)"/>
+            <g data-e="bars" fill="#6fe0d4" fill-opacity=".035" stroke="#78ece0" stroke-opacity=".13" stroke-width="1">
+              <rect x="355.05" y="311" width="5.95" height="61.5" rx="2.975"/>
+              <rect x="369.25" y="342" width="5.95" height="30.5" rx="2.975"/>
+              <rect x="383.35" y="331" width="5.95" height="41.5" rx="2.975"/>
+              <rect x="397.95" y="352" width="5.95" height="20.5" rx="2.975"/>
+            </g>
+            <circle data-e="venn-a" cx="432.5" cy="344.5" r="18" fill="url(#ai-a)" stroke="#d2fff8" stroke-opacity=".08"/>
+            <circle class="blend-screen" data-e="venn-b" cx="453.5" cy="344.5" r="18" fill="url(#ai-b)" stroke="#d2fff8" stroke-opacity=".10"/>
+          </svg>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Actionable Insights</h3>
+          <p class="card__text">Turn complex data into clear decisions with instant, intelligent analysis.</p>
+        </div>
+      </article>
+
+      <!-- 3 · Automated Reporting -->
+      <article class="card">
+        <div class="card__stage">
+          <svg class="icon-report" viewBox="630 270 111 122" aria-hidden="true" focusable="false">
+            <defs>
+              <filter id="ar-soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.6"/></filter>
+              <filter id="ar-bloom" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>
+              <filter id="ar-line" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation=".95"/></filter>
+              <linearGradient id="ar-fill" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#5fd6c0" stop-opacity=".045"/>
+                <stop offset=".6" stop-color="#5fd6c0" stop-opacity=".02"/>
+                <stop offset="1" stop-color="#5fd6c0" stop-opacity=".004"/>
+              </linearGradient>
+            </defs>
+            <!-- outer halo of the glass sheet -->
+            <rect x="644.3" y="279.4" width="82.8" height="103.4" rx="8" fill="none" stroke="#4fd0a6" stroke-opacity=".09" stroke-width="4" filter="url(#ar-soft)"/>
+            <!-- glass sheet -->
+            <rect x="644.3" y="279.4" width="82.8" height="103.4" rx="8" fill="url(#ar-fill)" stroke="#5ad2aa" stroke-opacity=".22" stroke-width="1"/>
+            <!-- soft bloom under the body copy lines -->
+            <rect x="652" y="320" width="64" height="44" rx="6" fill="#4fbfb0" fill-opacity=".045" filter="url(#ar-bloom)"/>
+            <g fill="#5ebdb4" data-e="lines-1">
+              <rect x="657.3" y="293.1" width="41.4" height="5.4" rx="2.7" fill-opacity=".235"/>
+              <rect x="657.3" y="303.6" width="26.4" height="4.9" rx="2.45" fill-opacity=".15"/>
+            </g>
+            <g fill="#5ebdb4" fill-opacity=".165" filter="url(#ar-line)" data-e="lines-2">
+              <rect x="656.9" y="323.1" width="55.6" height="4.9" rx="2.45"/>
+              <rect x="656.9" y="334.0" width="55.6" height="4.9" rx="2.45"/>
+              <rect x="656.9" y="344.9" width="55.6" height="4.9" rx="2.45"/>
+              <rect x="657.3" y="354.8" width="41.4" height="4.9" rx="2.45"/>
+            </g>
+          </svg>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title">Automated Reporting</h3>
+          <p class="card__text">Generate structured reports that reveal system health at a glance.</p>
+        </div>
+      </article>
+    </div>
+
+    <div class="cap__foot"></div>
+  </div>
+</section>
+<script>
+/* ==================================================================
+   ENTRANCE — one master timeline, runs once, then everything is static.
+   Web Animations API, fill:"backwards" only: each element holds its
+   start pose during its delay and returns to the authored CSS the
+   moment it finishes, so the final frame is the untouched design.
+   Motion vocabulary (all movement is upward / outward, never sideways
+   except the Venn circles converging on their intersection):
+     A  masked rise ......... headline (text rises inside a fixed mask)
+     B  settle .............. labels, lede, card copy (short rise + fade)
+     C  surface settle ...... glass cards
+     D  icon gesture ........ one meaningful, one-shot move per icon
+================================================================== */
+(function(){
+  var root=document.documentElement;
+  if(!root.classList.contains('enter')||!root.animate)return root.classList.remove('enter');
+  var started=false;
+
+  function run(){
+    if(started)return; started=true;
+    var $=function(s,c){return (c||document).querySelector(s)},
+        $$=function(s,c){return [].slice.call((c||document).querySelectorAll(s))};
+
+    /* design unit (px per artboard px) in the current responsive mode */
+    var probe=document.createElement('i');
+    probe.style.cssText='position:absolute;visibility:hidden;width:calc(100 * var(--u))';
+    $('.cap__frame').appendChild(probe);
+    var u=probe.getBoundingClientRect().width/100; probe.remove();
+
+    var small=innerWidth<529,          /* mobile: a little more restrained */
+        D=small?.75:1, T=small?.9:1,
+        vh=innerHeight,
+        EXPO='cubic-bezier(.16,1,.3,1)',   /* settle */
+        MASK='cubic-bezier(.19,1,.22,1)',  /* headline */
+        QUART='cubic-bezier(.25,1,.5,1)',  /* small parts */
+        anims=[];
+
+    function play(el,kf,at,dur,ease,extra){
+      if(!el)return;
+      var o={delay:at*T,duration:dur*T,easing:ease,fill:'backwards'};
+      if(extra)for(var k in extra)o[k]=extra[k];
+      anims.push(el.animate(kf,o));
+    }
+    function rise(el,at,dist,dur,ease){
+      play(el,[{opacity:0,transform:'translate3d(0,'+(dist*u*D)+'px,0)'},{opacity:1,transform:'none'}],at,dur,ease||EXPO);
+    }
+    var inView=function(el){return el.getBoundingClientRect().top<vh*.92};
+
+    /* 01 — context strip: index, its rule drawing, then the two labels */
+    var bar=$$('.cap__bar > span');
+    rise(bar[0],60,4,700,QUART);
+    play(bar[0],[{transform:'scaleX(0)'},{transform:'none'}],140,1000,EXPO,{pseudoElement:'::after'});
+    rise(bar[1],130,4,700,QUART);
+    rise(bar[2],200,4,700,QUART);
+
+    /* 02 — headline: rises inside a fixed mask (clip moves opposite to the
+       text, so the visible window never moves), "Clarity" resolves after */
+    var h=$('.cap__title'), e='.24em';
+    play(h,[
+      {transform:'translate3d(0,calc(100% + '+e+'),0)',clipPath:'inset(calc(-100% - 2 * '+e+') -.2em 100% -.2em)'},
+      {transform:'none',clipPath:'inset(-'+e+' -.2em -'+e+' -.2em)'}
+    ],200,1150,MASK);
+    play($('em',h),[{opacity:0},{opacity:1}],300,1000,'cubic-bezier(.33,0,.2,1)');
+
+    /* 03 — supporting copy */
+    rise($('.cap__lede'),540,10,950);
+
+    /* 04 — cards in reading order; each icon performs its idea once */
+    $$('.card').forEach(function(card,i){
+      if(!inView(card))return;              /* below the fold: stays static */
+      var c=780+i*120;
+      rise(card,c,20,1050);
+      rise($('.card__title',card),c+190,8,800);
+      rise($('.card__text',card),c+260,8,800);
+
+      /* signals: core lights, rings emanate outward */
+      play($('[data-e=core-halo]',card),[{opacity:0,transform:'scale(.7)'},{opacity:1,transform:'none'}],c+170,1000,EXPO);
+      play($('[data-e=core]',card),[{opacity:0,transform:'scale(.6)'},{opacity:1,transform:'none'}],c+170,850,EXPO);
+      ['ring-1','ring-2','ring-3'].forEach(function(r,k){
+        play($('[data-e='+r+']',card),[{opacity:0,transform:'scale(.8)'},{opacity:1,transform:'none'}],c+250+k*85,1000,EXPO);
+      });
+
+      /* insights: legend appears, bars grow up, sets converge to intersect */
+      play($('[data-e=dashes]',card),[{opacity:0},{opacity:1}],c+200,650,QUART);
+      play($('[data-e=bars]',card),[{clipPath:'inset(100% -2px -2px -2px)'},{clipPath:'inset(-2px -2px -2px -2px)'}],c+230,950,EXPO);
+      play($('[data-e=venn-a]',card),[{opacity:0,transform:'translate3d(-7px,0,0)'},{opacity:1,transform:'none'}],c+290,1050,EXPO);
+      play($('[data-e=venn-b]',card),[{opacity:0,transform:'translate3d(7px,0,0)'},{opacity:1,transform:'none'}],c+290,1050,EXPO);
+
+      /* reporting: the sheet arrives with the card, its lines get written */
+      play($('[data-e=lines-1]',card),[{clipPath:'inset(-3px 100% -3px -3px)'},{clipPath:'inset(-3px -3px -3px -3px)'}],c+250,800,EXPO);
+      play($('[data-e=lines-2]',card),[{clipPath:'inset(-4px 100% -4px -4px)'},{clipPath:'inset(-4px -4px -4px -4px)'}],c+350,900,EXPO);
+    });
+
+    /* every start pose is now held by its animation → release the gate */
+    root.classList.remove('enter');
+
+    /* end of sequence: drop every animation object; nothing keeps running */
+    Promise.all(anims.map(function(a){return a.finished})).then(function(){
+      anims.forEach(function(a){a.cancel()}); anims.length=0;
+    });
+  }
+
+  /* start once fonts are ready (embedded, so this is near-instant), capped */
+  var ready=document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve();
+  Promise.race([ready,new Promise(function(r){setTimeout(r,800)})]).then(function(){requestAnimationFrame(run)});
+})();
+</script>
+</body>
+</html>
